@@ -78,9 +78,8 @@ def pregunta_03():
     # Importe Pipeline
     # Importe OneHotEncoder
     from sklearn.compose import make_column_selector
-    from sklearn.compose import ColumnTransformer 
     from sklearn.compose import make_column_transformer
-    from sklearn.feature_selection import SelectKBest,f_regression
+    from sklearn.feature_selection import SelectKBest,f_regression, chi2
     from sklearn.linear_model import LinearRegression
     from sklearn.pipeline import Pipeline
     from sklearn.model_selection import GridSearchCV
@@ -99,30 +98,30 @@ def pregunta_03():
                         OneHotEncoder(),
                         make_column_selector(dtype_include=object),
                     ),
-                    remainder="passthrough",
+                    remainder='passthrough',
                 ),
             ),
             # Paso 2: Construya un selector de características que seleccione las K
             # características más importantes. Utilice la función f_regression.
             (
                 "selectKBest",
-                SelectKBest(score_func=f_regression),
+                SelectKBest(score_func=f_regression, k=9),
             ),
             # Paso 3: Construya un modelo de regresión lineal.
             (
-                "LinearRegression",
+                "regressor",
                 LinearRegression(),
             ),
         ],
     )
 
-    # Cargua de las variables.
-    X_train, _, y_train, _ = pregunta_02()
+   # Cargua de las variables.
+    X_train, X_test, y_train, y_test = pregunta_02()
 
     # Defina un diccionario de parámetros para el GridSearchCV. Se deben
     # considerar valores desde 1 hasta 11 regresores para el modelo
     param_grid = {
-        "pg__params": np.arange(1,12,1),
+        "regressor__n_jobs": np.arange(1, 12, 1),
     }
 
     # Defina una instancia de GridSearchCV con el pipeline y el diccionario de
@@ -132,16 +131,16 @@ def pregunta_03():
         estimator=pipeline,
         param_grid=param_grid,
         cv=5,
-        scoring="neg_mean_squared_error",
+        scoring='neg_mean_squared_error',
         refit=True,
         return_train_score=False,
     )
-
     # Búsque la mejor combinación de regresores
     gridSearchCV.fit(X_train, y_train)
 
     # Retorne el mejor modelo
     return gridSearchCV
+
 
 
 def pregunta_04():
